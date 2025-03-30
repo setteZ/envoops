@@ -1,0 +1,3 @@
+[submodule "env-node/sht30"]
+	path = env-node/sht30
+	url = git@github.com:robert-hh/SHT30.git

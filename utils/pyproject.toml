@@ -1,0 +1,7 @@
+[project]
+name = "envoops-utils"
+version = "0.1.0"
+dependencies = [
+  "adafruit-ampy",
+  "esptool",
+]
