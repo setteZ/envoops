@@ -9,6 +9,7 @@
   },
   "mqtt": {
     "server": "ipv4-address",
-    "port": 1883
+    "port": 1883,
+    "topic": "somewhere"
   }
 }

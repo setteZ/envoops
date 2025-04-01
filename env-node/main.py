@@ -36,7 +36,7 @@ def do_connect(ssid: str, pwd: str, addr4="", gw4=""):
     print("network config:", sta_if.ipconfig("addr4"))
 
 
-def web_page(host: str):
+def web_page(host: str, t: str, h: str):
     """prepare response page"""
     html = """<!DOCTYPE html>
 <html>
@@ -49,9 +49,6 @@ def web_page(host: str):
     </body>
 </html>
 """
-    t_int, t_dec, h_int, h_dec = sht.measure_int()
-    t = f"{t_int}.{t_dec:02d}"
-    h = f"{h_int}.{h_dec:02d}"
     resp = html % (host, t, h)
     return resp
 
@@ -101,6 +98,18 @@ try:
 except:
     ADDR4 = ""
     GW4 = ""
+try:
+    MQTT_SERVER = data["mqtt"]["server"]
+    MQTT_PORT = data["mqtt"]["port"]
+except:
+    print("missing mqtt server and port info")
+    while True:
+        pass
+try:
+    MQTT_PUBLISH_TOPIC = data["mqtt"]["topic"]
+except:
+    MQTT_PUBLISH_TOPIC = HOST
+
 # connect to the wifi
 led.off()
 time.sleep_ms(200)
@@ -126,7 +135,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(("", 80))
 s.listen(5)
 
-client = MQTTClient("192.168.1.203", port=1883)
+client = MQTTClient(MQTT_SERVER, port=MQTT_PORT)
 
 client.set_connected_callback(con_cb)
 client.set_puback_callback(puback_cb)
@@ -143,17 +152,27 @@ while True:
     led.on()
     print(f"Got a connection from {addr}")
     request = conn.recv(1024)
-    response = web_page(HOST)
-    conn.send("HTTP/1.1 200 OK\n")
-    conn.send("Content-Type: text/html\n")
-    conn.send("Connection: close\n\n")
-    conn.sendall(response)
-    conn.close()
-    if client.isconnected():
-        try:
-            pub_id = client.publish('publish/topic', 'payload', False)
-        except Exception as e:
-            print(f"exception: {e}")
-        else:
-            print(f"published: {pub_id}")
+    request_str = request.decode('utf-8')
+    if request_str.find('/info') > 0:
+        conn.send("HTTP/1.1 200 OK\n")
+        conn.send("Content-Type: application/json\n")
+        conn.send("Connection: close\n\n")
+        conn.sendall(json.dumps(data))
+        conn.close()
+    else:
+        t_int, t_dec, h_int, h_dec = sht.measure_int()
+        t = f"{t_int}.{t_dec:02d}"
+        h = f"{h_int}.{h_dec:02d}"
+        response = web_page(HOST, t, h)
+        conn.send("HTTP/1.1 200 OK\n")
+        conn.send("Content-Type: text/html\n")
+        conn.send("Connection: close\n\n")
+        conn.sendall(response)
+        conn.close()
+        if client.isconnected():
+            try:
+                pub_id = client.publish(f"{MQTT_PUBLISH_TOPIC}/temperature", t, False)
+                pub_id = client.publish(f"{MQTT_PUBLISH_TOPIC}/humidity", h, False)
+            except Exception as e:
+                print(f"exception: {e}")
     led.off()
