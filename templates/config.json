@@ -1,10 +1,14 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "host": "host-name",
   "network": {
     "ssid": "wifi-ssid",
     "pwd": "wifi-password",
     "addr4": "ipv4-static-address",
     "gw4": "gateway-ip"
+  },
+  "mqtt": {
+    "server": "ipv4-address",
+    "port": 1883
   }
 }

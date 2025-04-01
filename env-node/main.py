@@ -12,6 +12,7 @@ import machine
 from machine import I2C, Pin, SDCard
 import network
 
+from mqtt import MQTTClient
 import sht30
 
 i2c = I2C(1, sda=Pin(21), scl=Pin(22))
@@ -107,10 +108,35 @@ led.on()
 do_connect(SSID, PWD, ADDR4, GW4)
 led.off()
 
+def puback_cb(msg_id):
+  print('PUBACK ID = %r' % msg_id)
+
+def suback_cb(msg_id, qos):
+  print('SUBACK ID = %r, Accepted QOS = %r' % (msg_id, qos))
+  
+def con_cb(connected):
+  if connected:
+    client.subscribe('subscribe/topic')
+
+def msg_cb(topic, pay):
+  print('Received %s: %s' % (topic.decode("utf-8"), pay.decode("utf-8")))
+
 # create the webserver
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(("", 80))
 s.listen(5)
+
+client = MQTTClient("192.168.1.203", port=1883)
+
+client.set_connected_callback(con_cb)
+client.set_puback_callback(puback_cb)
+client.set_suback_callback(suback_cb)
+client.set_message_callback(msg_cb)
+
+client.connect(HOST)
+
+while not client.isconnected():
+    time.sleep_ms(100)
 
 while True:
     conn, addr = s.accept()
@@ -123,4 +149,11 @@ while True:
     conn.send("Connection: close\n\n")
     conn.sendall(response)
     conn.close()
+    if client.isconnected():
+        try:
+            pub_id = client.publish('publish/topic', 'payload', False)
+        except Exception as e:
+            print(f"exception: {e}")
+        else:
+            print(f"published: {pub_id}")
     led.off()
