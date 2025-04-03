@@ -1,3 +1,6 @@
 [submodule "env-node/sht30"]
 	path = env-node/sht30
 	url = git@github.com:robert-hh/SHT30.git
+[submodule "env-node/micropython-mqtt"]
+	path = env-node/micropython-mqtt
+	url = git@github.com:chrismoorhouse/micropython-mqtt.git
