@@ -19,6 +19,12 @@ i2c = I2C(1, sda=Pin(21), scl=Pin(22))
 sht = sht30.SHT30(i2c=i2c, i2c_address=68)
 led = Pin(2, Pin.OUT)
 
+def error():
+    while True:
+        time.sleep_ms(200)
+        led.off()
+        time.sleep_ms(200)
+        led.on()
 
 def do_connect(ssid: str, pwd: str, addr4="", gw4=""):
     """connect to network"""
@@ -60,21 +66,13 @@ try:
     os.mount(sd, "/sd")  # mount
 except:  # pylint: disable=bare-except
     print("missing uSD")
-    while True:
-        time.sleep_ms(200)
-        led.off()
-        time.sleep_ms(200)
-        led.on()
+    error()
 try:
     with open("/sd/config.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 except:  # pylint: disable=bare-except
     os.umount("/sd")  # eject
-    while True:
-        time.sleep_ms(200)
-        led.off()
-        time.sleep_ms(200)
-        led.on()
+    error()
 
 os.umount("/sd")  # eject
 print(data)
@@ -83,11 +81,7 @@ try:
     SSID = data["network"]["ssid"]
     PWD = data["network"]["pwd"]
 except:  # pylint: disable=bare-except
-    while True:
-        time.sleep_ms(200)
-        led.off()
-        time.sleep_ms(200)
-        led.on()
+    error()
 try:
     HOST = data["host"]
 except:
@@ -103,8 +97,7 @@ try:
     MQTT_PORT = data["mqtt"]["port"]
 except:
     print("missing mqtt server and port info")
-    while True:
-        pass
+    error()
 try:
     MQTT_PUBLISH_TOPIC = data["mqtt"]["topic"]
 except:
