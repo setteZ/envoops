@@ -14,7 +14,7 @@ func main() {
 	}
 
 	// mqtt client
-	go client.Run()
+	client.Run()
 
 	// web server
 	server.Run()
