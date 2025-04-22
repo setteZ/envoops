@@ -1,0 +1,16 @@
+[Unit]
+Description=the envoops server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=the-user
+WorkingDirectory=the-working-directory
+ExecStart=./env-server
+EnvironmentFile=./env-server.env
+
+[Install]
+WantedBy=multi-user.target
