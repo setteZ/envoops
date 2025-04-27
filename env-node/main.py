@@ -54,7 +54,8 @@ print(data)
 try:
     HOST = data["host"]
 except:
-    HOST = "envoops node"
+    global mac
+    HOST = f"env-node_{mac}"
 try:
     MQTT_SERVER = data["mqtt"]["server"]
     MQTT_PORT = data["mqtt"]["port"]

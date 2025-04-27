@@ -7,11 +7,15 @@ import os
 import re
 import time
 
+import ubinascii
+
 import machine
 from machine import Pin, SDCard
 import network
 
 led = Pin(2, Pin.OUT)
+
+global mac
 
 def error():
     while True:
@@ -20,9 +24,10 @@ def error():
         time.sleep_ms(200)
         led.on()
 
-def do_connect(ssid: str, pwd: str, addr4="", gw4=""):
+def do_connect(ssid: str, pwd: str, addr4="", gw4="") -> str:
     """connect to network"""
     sta_if = network.WLAN(network.WLAN.IF_STA)
+    mac = ubinascii.hexlify(sta_if.config('mac')).decode()
     addr_p = re.compile("\\d+\\.\\d+\\.\\d+\\.\\d+/\\d+")
     gw_p = re.compile("\\d+\\.\\d+\\.\\d+\\.\\d+")
     if addr_p.match(addr4) and gw_p.match(gw4):
@@ -34,6 +39,7 @@ def do_connect(ssid: str, pwd: str, addr4="", gw4=""):
         while not sta_if.isconnected():
             machine.idle()
     print("network config:", sta_if.ipconfig("addr4"))
+    return mac[:6]
 
 
 # read wifi credential from SD card
@@ -70,5 +76,5 @@ except:
 led.off()
 time.sleep_ms(200)
 led.on()
-do_connect(SSID, PWD, ADDR4, GW4)
+mac = do_connect(SSID, PWD, ADDR4, GW4)
 led.off()
