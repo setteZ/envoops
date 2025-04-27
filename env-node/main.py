@@ -76,10 +76,15 @@ def suback_cb(msg_id, qos):
   
 def con_cb(connected):
   if connected:
-    client.subscribe('subscribe/topic')
+    client.subscribe('cmd/+')
 
 def msg_cb(topic, pay):
-  print('Received %s: %s' % (topic.decode("utf-8"), pay.decode("utf-8")))
+  topic_str = topic.decode("utf-8")
+  pay_str = pay.decode("utf-8")
+  print('Received %s: %s' % (topic_str, pay_str))
+  dest = topic_str.split("/")[1]
+  if dest in ["all", HOST]:
+    print(f"the command {pay_str} is for me")
 
 # create the webserver
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
