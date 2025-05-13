@@ -11,7 +11,6 @@ ampy --port /dev/ttyUSB0 put ./env-node/boot.py
 where ./env-node/boot.py is the file to use to calculate the sha but only boot.by shall be reported in the manifest file'
 """
 
-import os
 import hashlib
 import sys
 import re
