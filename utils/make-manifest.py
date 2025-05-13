@@ -70,7 +70,7 @@ def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
             if file_hash:
                 # Use basename if requested, otherwise use the full path
                 name_to_output = path.name if use_basename else file_path
-                manifest.write(f"{name_to_output},{file_hash}\n")
+                manifest.write(f"{name_to_output} {file_hash}\n")
                 successful += 1
             else:
                 failed += 1
