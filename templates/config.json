@@ -1,5 +1,5 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "host": "host-name",
   "network": {
     "ssid": "wifi-ssid",
@@ -11,5 +11,9 @@
     "server": "ipv4-address",
     "port": 1883,
     "topic": "somewhere"
+  },
+  "ota_update": {
+    "host": "url",
+    "prj": "project-name"
   }
 }

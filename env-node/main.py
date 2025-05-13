@@ -15,6 +15,8 @@ import network
 from mqtt import MQTTClient
 import sht30
 
+import micropython_ota
+
 i2c = I2C(1, sda=Pin(21), scl=Pin(22))
 sht = sht30.SHT30(i2c=i2c, i2c_address=68)
 led = Pin(2, Pin.OUT)
@@ -67,6 +69,13 @@ try:
 except:
     MQTT_PUBLISH_TOPIC = HOST
 
+try:
+    OTA_HOST = data["ota_update"]["host"]
+    OTA_PRJ = data["ota_update"]["prj"]
+except:
+    OTA_HOST = None
+    OTA_PRJ = None
+
 
 def puback_cb(msg_id):
   print('PUBACK ID = %r' % msg_id)
@@ -85,6 +94,9 @@ def msg_cb(topic, pay):
   dest = topic_str.split("/")[1]
   if dest in ["all", HOST]:
     print(f"the command {pay_str} is for me")
+    if pay_str == "update":
+        if (OTA_PRJ != None) and (OTA_HOST != None):
+            micropython_ota.check_for_ota_update(OTA_HOST, OTA_PRJ)
 
 # create the webserver
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

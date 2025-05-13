@@ -13,6 +13,8 @@ import machine
 from machine import Pin, SDCard
 import network
 
+import micropython_ota
+
 led = Pin(2, Pin.OUT)
 
 global mac
@@ -72,9 +74,18 @@ except:
     ADDR4 = ""
     GW4 = ""
 
+try:
+    OTA_HOST = data["ota_update"]["host"]
+    OTA_PRJ = data["ota_update"]["prj"]
+except:
+    OTA_HOST = None
+    OTA_PRJ = None
+
 # connect to the wifi
 led.off()
 time.sleep_ms(200)
 led.on()
 mac = do_connect(SSID, PWD, ADDR4, GW4)
 led.off()
+if (OTA_PRJ != None) and (OTA_HOST != None):
+    micropython_ota.ota_update(OTA_PRJ, OTA_HOST, use_version_prefix=False)
