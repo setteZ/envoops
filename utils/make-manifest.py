@@ -10,16 +10,18 @@ ampy --port /dev/ttyUSB0 put ./env-node/boot.py
 
 where ./env-node/boot.py is the file to use to calculate the sha but only boot.by shall be reported in the manifest file'
 """
+
 import os
 import hashlib
 import sys
 import re
 from pathlib import Path
 
+
 def calculate_sha256(file_path):
     """Calculate the SHA-256 hash of a file."""
     sha256_hash = hashlib.sha256()
-    
+
     try:
         with open(file_path, "rb") as f:
             # Read the file in chunks to handle large files efficiently
@@ -30,43 +32,45 @@ def calculate_sha256(file_path):
         print(f"Error processing {file_path}: {e}", file=sys.stderr)
         return None
 
+
 def extract_files_from_bash(bash_script_path):
     """Extract files from bash script with ampy put commands."""
     files = []
-    
+
     try:
-        with open(bash_script_path, 'r') as f:
+        with open(bash_script_path, "r") as f:
             for line in f:
                 # Look for "ampy --port /dev/ttyUSBx put [filepath]" pattern
-                match = re.search(r'ampy\s+--port\s+\S+\s+put\s+(\S+)', line)
+                match = re.search(r"ampy\s+--port\s+\S+\s+put\s+(\S+)", line)
                 if match:
                     files.append(match.group(1))
     except Exception as e:
         print(f"Error reading bash script {bash_script_path}: {e}", file=sys.stderr)
-    
+
     return files
+
 
 def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
     """Create a manifest file with filename and SHA-256 hash, one file per line."""
     successful = 0
     failed = 0
-    
+
     with open(output_file, "w") as manifest:
         for file_path in file_list:
             path = Path(file_path)
-            
+
             if not path.exists():
                 print(f"Warning: File not found - {file_path}", file=sys.stderr)
                 failed += 1
                 continue
-                
+
             if not path.is_file():
                 print(f"Warning: Not a file - {file_path}", file=sys.stderr)
                 failed += 1
                 continue
-            
+
             file_hash = calculate_sha256(file_path)
-            
+
             if file_hash:
                 # Use basename if requested, otherwise use the full path
                 name_to_output = path.name if use_basename else file_path
@@ -74,39 +78,48 @@ def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
                 successful += 1
             else:
                 failed += 1
-    
+
     print(f"Manifest created at {output_file}")
     print(f"Files processed: {successful} successful, {failed} failed")
-    
+
     return output_file
+
 
 if __name__ == "__main__":
     # Define command line arguments
     import argparse
-    
-    parser = argparse.ArgumentParser(description="Generate manifest file with SHA-256 hashes")
+
+    parser = argparse.ArgumentParser(
+        description="Generate manifest file with SHA-256 hashes"
+    )
     parser.add_argument("files", nargs="*", help="Files to process")
-    parser.add_argument("--output", "-o", default="manifest.txt", help="Output manifest file")
+    parser.add_argument(
+        "--output", "-o", default="manifest.txt", help="Output manifest file"
+    )
     parser.add_argument("--bash-script", "-b", help="Extract files from bash script")
-    parser.add_argument("--use-basename", "-n", action="store_true", 
-                        help="Use only the base filename in the manifest")
-    
+    parser.add_argument(
+        "--use-basename",
+        "-n",
+        action="store_true",
+        help="Use only the base filename in the manifest",
+    )
+
     args = parser.parse_args()
-    
+
     files_to_process = []
-    
+
     # Extract files from bash script if provided
     if args.bash_script:
         bash_files = extract_files_from_bash(args.bash_script)
         print(f"Extracted {len(bash_files)} files from bash script: {bash_files}")
         files_to_process.extend(bash_files)
-    
+
     # Add any directly specified files
     if args.files:
         files_to_process.extend(args.files)
-    
+
     if not files_to_process:
         parser.print_help()
         sys.exit(1)
-    
+
     create_manifest(files_to_process, args.output, args.use_basename)
