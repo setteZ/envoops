@@ -37,7 +37,7 @@ def extract_files_from_bash(bash_script_path):
     files = []
 
     try:
-        with open(bash_script_path, "r") as f:
+        with open(bash_script_path, "r", encoding="utf-8") as f:
             for line in f:
                 # Look for "ampy --port /dev/ttyUSBx put [filepath]" pattern
                 match = re.search(r"ampy\s+--port\s+\S+\s+put\s+(\S+)", line)
@@ -54,7 +54,7 @@ def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
     successful = 0
     failed = 0
 
-    with open(output_file, "w") as manifest:
+    with open(output_file, "w", encoding="utf-8") as manifest:
         for file_path in file_list:
             path = Path(file_path)
 
