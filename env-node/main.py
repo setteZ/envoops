@@ -145,7 +145,7 @@ while True:
     </body>
 </html>
 """
-        conn.sendall(json.dumps(data))
+        conn.sendall(html)
         conn.close()
     else:
         t_int, t_dec, h_int, h_dec = sht.measure_int()
