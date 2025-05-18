@@ -1,7 +1,8 @@
 """
 This is the main
 """
-
+import gc
+gc.mem_free()
 import json
 import os
 import re
@@ -26,7 +27,7 @@ def error():
         time.sleep_ms(200)
         led.on()
 
-def do_connect(ssid: str, pwd: str, addr4="", gw4="") -> str:
+def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str:
     """connect to network"""
     sta_if = network.WLAN(network.WLAN.IF_STA)
     mac = ubinascii.hexlify(sta_if.config('mac')).decode()
@@ -41,6 +42,7 @@ def do_connect(ssid: str, pwd: str, addr4="", gw4="") -> str:
         while not sta_if.isconnected():
             machine.idle()
     print("network config:", sta_if.ipconfig("addr4"))
+    network.ipconfig(dns=dns)
     return mac[:6]
 
 
@@ -75,6 +77,11 @@ except:
     GW4 = ""
 
 try:
+    DNS = data["network"]["dns"]
+except:
+    DNS = GW4
+
+try:
     OTA_HOST = data["ota_update"]["host"]
     OTA_PRJ = data["ota_update"]["prj"]
 except:
@@ -85,7 +92,7 @@ except:
 led.off()
 time.sleep_ms(200)
 led.on()
-mac = do_connect(SSID, PWD, ADDR4, GW4)
+mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
 led.off()
 if (OTA_PRJ != None) and (OTA_HOST != None):
-    micropython_ota.ota_update(OTA_PRJ, OTA_HOST, use_version_prefix=False)
+    micropython_ota.ota_update(OTA_HOST, OTA_PRJ, use_version_prefix=False)
