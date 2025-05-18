@@ -21,6 +21,12 @@ i2c = I2C(1, sda=Pin(21), scl=Pin(22))
 sht = sht30.SHT30(i2c=i2c, i2c_address=68)
 led = Pin(2, Pin.OUT)
 
+current_version = '0.0.0'
+if 'version' in os.listdir():
+    with open('version', 'r') as current_version_file:
+        current_version = current_version_file.readline().strip()
+
+
 def error():
     while True:
         time.sleep_ms(200)
@@ -125,6 +131,20 @@ while True:
         conn.send("HTTP/1.1 200 OK\n")
         conn.send("Content-Type: application/json\n")
         conn.send("Connection: close\n\n")
+        conn.sendall(json.dumps(data))
+        conn.close()
+    elif request_str.find('/version') > 0:
+        conn.send("HTTP/1.1 200 OK\n")
+        conn.send("Content-Type: text/html\n")
+        conn.send("Connection: close\n\n")
+        html = f"""<!DOCTYPE html>
+<html>
+    <head> <title>envoops</title> </head>
+    <body>
+        <p>{current_version}</p>
+    </body>
+</html>
+"""
         conn.sendall(json.dumps(data))
         conn.close()
     else:
