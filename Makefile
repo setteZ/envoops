@@ -1,7 +1,7 @@
 
 VERSION := $(shell cat ./env-node/version | tr -d '\n')
 
-deploy:
+put:
 	@bash -c "source ./utils/.venv/bin/activate && bash ./utils/deploy.sh"
 
 repl:
