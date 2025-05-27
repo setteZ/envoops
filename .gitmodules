@@ -6,4 +6,4 @@
 	url = git@github.com:chrismoorhouse/micropython-mqtt.git
 [submodule "env-node/micropython_ota"]
 	path = env-node/micropython_ota
-	url = git@github.com:scottyai/micropython_ota.git
+	url = git@github.com:settez/micropython_ota.git
