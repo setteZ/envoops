@@ -2,7 +2,7 @@
 VERSION := $(shell cat ./env-node/version | tr -d '\n')
 
 put:
-	@bash -c "source ./utils/.venv/bin/activate && bash ./utils/deploy.sh"
+	@bash -c "source ./utils/.venv/bin/activate && bash ./utils/put.sh"
 
 repl:
 	picocom /dev/ttyUSB0 -b115200
