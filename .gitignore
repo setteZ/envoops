@@ -2,3 +2,4 @@ utils/.venv/
 tmp/
 *.db
 release/
+release-node/

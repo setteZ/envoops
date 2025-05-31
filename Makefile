@@ -12,5 +12,5 @@ run-broker:
 
 .PHONY: release
 release:
-	mkdir -p release/$(VERSION)
-	@bash -c "python ./utils/make-manifest.py -b ./utils/deploy.sh -n -o release/$(VERSION)/manifest"
+	mkdir -p release-node/$(VERSION)
+	@bash -c "python ./utils/make-manifest.py -b ./utils/put.sh -n -o release-node/$(VERSION)"

@@ -12,6 +12,7 @@ where ./env-node/boot.py is the file to use to calculate the sha but only boot.b
 """
 
 import hashlib
+import os
 import sys
 import re
 from pathlib import Path
@@ -49,12 +50,12 @@ def extract_files_from_bash(bash_script_path):
     return files
 
 
-def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
+def create_manifest(file_list, output_path="", use_basename=False):
     """Create a manifest file with filename and SHA-256 hash, one file per line."""
     successful = 0
     failed = 0
 
-    with open(output_file, "w", encoding="utf-8") as manifest:
+    with open(os.path.join(output_path,"manifest"), "w", encoding="utf-8") as manifest:
         for file_path in file_list:
             path = Path(file_path)
 
@@ -78,10 +79,10 @@ def create_manifest(file_list, output_file="manifest.txt", use_basename=False):
             else:
                 failed += 1
 
-    print(f"Manifest created at {output_file}")
+    print(f"Manifest created at {output_path}")
     print(f"Files processed: {successful} successful, {failed} failed")
 
-    return output_file
+    return output_path
 
 
 if __name__ == "__main__":
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("files", nargs="*", help="Files to process")
     parser.add_argument(
-        "--output", "-o", default="manifest.txt", help="Output manifest file"
+        "--output", "-o", default="", help="Output path for manifest file"
     )
     parser.add_argument("--bash-script", "-b", help="Extract files from bash script")
     parser.add_argument(
