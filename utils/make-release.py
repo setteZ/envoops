@@ -13,6 +13,7 @@ where ./env-node/boot.py is the file to use to calculate the sha but only boot.b
 
 import hashlib
 import os
+import shutil
 import sys
 import re
 from pathlib import Path
@@ -123,3 +124,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     create_manifest(files_to_process, args.output, args.use_basename)
+    for i in files_to_process:
+        shutil.copy(i, args.output)
