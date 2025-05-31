@@ -1,0 +1,79 @@
+name: Release node
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on: workflow_dispatch
+
+
+permissions:
+  contents: write
+
+jobs:
+  Pack:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Pack for Release
+      run: |
+        make release
+    - name: Archive Release Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-node
+        path: release-node/
+        retention-days: 1
+        if-no-files-found: error
+  CheckDeployAvailability:
+    needs: Pack
+    runs-on: ubuntu-latest
+    outputs:
+      has-secret: ${{ steps.check.outputs.has-secret }}
+    steps:
+      - name: Check for secret
+        id: check
+        run: |
+          if [ -n "${{ secrets.SERVER_IP_NODE_OTA }}" ]; then
+            echo "has-secret=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-secret=false" >> $GITHUB_OUTPUT
+          fi
+  Deploy:
+    needs: CheckDeployAvailability
+    if: needs.CheckDeployAvailability.outputs.has-secret == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-node
+          path: release-node
+      - name: Deploy to the ota server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP_NODE_OTA: ${{ secrets.SERVER_IP_NODE_OTA }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          NODE_RELEASES_PATH: ${{ secrets.NODE_RELEASES_PATH }}
+        run: |
+          mkdir -p ~/.ssh/
+          eval $(ssh-agent -s)
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          echo "SERVER_IP_NODE_OTA is: $SERVER_IP_NODE_OTA"
+          ssh-keyscan -H $SERVER_IP_NODE_OTA >> ~/.ssh/known_hosts
+          echo "ssh setup done"
+          utils/deploy_node_update.sh "$(tr -d '\n' < ./env-node/version)"
+          echo "done"
+  Release:
+    needs: Pack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ github.ref_name }}

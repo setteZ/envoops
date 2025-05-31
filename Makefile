@@ -26,4 +26,4 @@ deploy-ota: release
 	@echo "done"
 
 clean:
-	@rm -r release-node
+	@rm -r -f release-node
