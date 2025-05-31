@@ -24,8 +24,8 @@ if [ ! -d "release-node/$1" ]; then
     exit 1
 fi
 
-if [ -n "$SSH_PRIVATE_KEY" ]; then
-    ID_FILE="-i $SSH_PRIVATE_KEY"
+if [ -n "$SSH_PRIVATE_KEY_LOCATION" ]; then
+    ID_FILE="-i $SSH_PRIVATE_KEY_LOCATION"
 else
     ID_FILE=""
 fi
