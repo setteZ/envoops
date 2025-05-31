@@ -43,7 +43,7 @@ def extract_files_from_bash(bash_script_path):
             for line in f:
                 # Look for "ampy --port /dev/ttyUSBx put [filepath]" pattern
                 match = re.search(r"ampy\s+--port\s+\S+\s+put\s+(\S+)", line)
-                if match:
+                if match and not "version" in match.group(1):
                     files.append(match.group(1))
     except Exception as e:
         print(f"Error reading bash script {bash_script_path}: {e}", file=sys.stderr)
