@@ -16,3 +16,15 @@ The following assume that `/dev/ttyUSB0` is the seial port of the board.
 ### Installation
 
 Follow the instruction [here](https://micropython.org/download/ESP32_GENERIC/) to flash the board.
+
+## Utils
+
+With the `Makefile` there is the possibility to call some scripts to make the life easier:
+
+- `make put` update the board connected to the USB
+- `make repl` open the serial repl connection (using `picocom`)
+- `make run-broker` run localli a MQTT broker for manual test
+- `make release` prepare a folder with all the files necessary for a release
+- `make deploy-ota` deploy on a server the release files
+
+A `.env` file (that you can find in the template folder as reference) is usefull for the configuration of the server references.
