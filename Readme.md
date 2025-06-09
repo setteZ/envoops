@@ -1,8 +1,20 @@
 # envoops
 
-The purpose of this repo is to develop an environmental wifi node using and ESP32 based board and [micropython](https://micropython.org/) for rapid prototyping.
+The purpose of this repo is to develop an environmental wifi node using and ESP32 based board and [micropython](https://micropython.org/) for rapid prototyping.\
+It is divided into different artifacts:
+- [env-node](env-node) is the physcal node the perform the measurements (written in Micropython)
+- [env-server](env-server) is the server that collect and save all the data (written in Go)
+- [broker](broker) the MQTT broker that dispatch the messagges to the network (using the [mosquitto](https://mosquitto.org/)
 
-## MicroPython
+Once you clone the repo, you shall update the sumbodules:
+```bash
+gt clone https://github.com/setteZ/envoops.git
+cd envoops
+git submodule update --init --recursive
+```
+
+## env-node
+
 
 ### Prerequisites
 
@@ -27,4 +39,4 @@ With the `Makefile` there is the possibility to call some scripts to make the li
 - `make release` prepare a folder with all the files necessary for a release
 - `make deploy-ota` deploy on a server the release files
 
-A `.env` file (that you can find in the template folder as reference) is usefull for the configuration of the server references.
+A `.env` file (you can find a template [here](templates/.env) as reference) is usefull for the configuration of the server references.
