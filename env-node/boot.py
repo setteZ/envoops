@@ -3,6 +3,7 @@ This is the main
 """
 import gc
 gc.mem_free()
+import asyncio
 import json
 import os
 import re
@@ -17,6 +18,7 @@ import network
 import micropython_ota
 
 import configs
+import server
 
 led = Pin(2, Pin.OUT)
 
@@ -97,8 +99,18 @@ led.on()
 if SSID != "":
     mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
 else:
+    # Configure access point with MAC-based SSID
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
+    mac = ubinascii.hexlify(ap.config('mac')).decode()
+    print(f"{mac}")
+    ap.config(ssid=f"ESP32-{mac[:6]}")    # set the SSID of the access point
+    ap.config(max_clients=1)              # set how many clients can connect to the network
+    ap.active(True)                       # activate the interface
+    while ap.active() is False:
+        pass
+    asyncio.run(server.main())
     while True:
-        error()
+        time.sleep(10)
 led.off()
 if (OTA_PRJ != None) and (OTA_HOST != None):
     micropython_ota.ota_update(OTA_HOST, OTA_PRJ, use_version_prefix=False)
