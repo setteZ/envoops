@@ -21,6 +21,7 @@ import configs
 led = Pin(2, Pin.OUT)
 
 global mac
+SSID = ""
 
 def error():
     while True:
@@ -55,46 +56,49 @@ try:
     os.mount(sd, "/sd")  # mount
 except:  # pylint: disable=bare-except
     print("missing uSD")
-    error()
-try:
-    with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-except:  # pylint: disable=bare-except
+else:
+    try:
+        with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except:  # pylint: disable=bare-except
+        print(f"missing {configs.CONFIG_PATH} file")
+    else:
+        print(data)
+        try:
+            PWD = data["network"]["pwd"]
+            SSID = data["network"]["ssid"]
+        except:  # pylint: disable=bare-except
+            print("missing info for the SSID connection")
+        try:
+            ADDR4 = data["network"]["addr4"]
+            GW4 = data["network"]["gw4"]
+        except:  # pylint: disable=bare-except
+            ADDR4 = ""
+            GW4 = ""
+        try:
+            DNS = data["network"]["dns"]
+        except:  # pylint: disable=bare-except
+            DNS = GW4
+        try:
+            OTA_HOST = data["ota_update"]["host"]
+            OTA_PRJ = data["ota_update"]["prj"]
+        except:  # pylint: disable=bare-except
+            OTA_HOST = None
+            OTA_PRJ = None
+
+finally:
     os.umount("/sd")  # eject
-    error()
 
-os.umount("/sd")  # eject
-print(data)
-
-try:
-    SSID = data["network"]["ssid"]
-    PWD = data["network"]["pwd"]
-except:  # pylint: disable=bare-except
-    error()
-try:
-    ADDR4 = data["network"]["addr4"]
-    GW4 = data["network"]["gw4"]
-except:
-    ADDR4 = ""
-    GW4 = ""
-
-try:
-    DNS = data["network"]["dns"]
-except:
-    DNS = GW4
-
-try:
-    OTA_HOST = data["ota_update"]["host"]
-    OTA_PRJ = data["ota_update"]["prj"]
-except:
-    OTA_HOST = None
-    OTA_PRJ = None
 
 # connect to the wifi
 led.off()
 time.sleep_ms(200)
 led.on()
-mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
+if SSID != "":
+    mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
+else:
+    while True:
+        error()
 led.off()
 if (OTA_PRJ != None) and (OTA_HOST != None):
     micropython_ota.ota_update(OTA_HOST, OTA_PRJ, use_version_prefix=False)
