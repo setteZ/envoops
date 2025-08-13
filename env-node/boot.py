@@ -16,6 +16,8 @@ import network
 
 import micropython_ota
 
+import configs
+
 led = Pin(2, Pin.OUT)
 
 global mac
@@ -55,7 +57,7 @@ except:  # pylint: disable=bare-except
     print("missing uSD")
     error()
 try:
-    with open("/sd/config.json", "r", encoding="utf-8") as f:
+    with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 except:  # pylint: disable=bare-except
     os.umount("/sd")  # eject
