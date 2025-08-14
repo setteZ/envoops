@@ -156,13 +156,14 @@ async def serve_client(reader, writer):
         content_length = 0
         while True:
             header = await reader.readline()
-            if header == b"\r\n":
+            if header == b"\r\n" or not header:
                 break
-            m = re.match("Content-Length: (\d+)", header.decode(), re.IGNORECASE)
-            if m:
-                content_length = int(m.group(1))
-
-        data = load_config()
+            header_str = header.decode()
+            if header_str.lower().startswith("content-length:"):
+                try:
+                    content_length = int(header_str.split(":")[1].strip())
+                except:
+                    content_length = 0
 
         if method == "GET":
             if path == "/":
