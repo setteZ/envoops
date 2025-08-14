@@ -230,4 +230,6 @@ async def main():
     asyncio.create_task(periodic_measurement(10))  # every 10 seconds
     server = await asyncio.start_server(serve_client, "0.0.0.0", 80)
     print("Server running on port 80")
-    await server.serve_forever()
+    # Keep the loop alive forever
+    while True:
+        await asyncio.sleep(3600)
