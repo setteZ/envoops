@@ -32,7 +32,7 @@ def error():
         time.sleep_ms(200)
         led.on()
 
-def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str:
+def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str | None:
     """connect to network"""
     sta_if = network.WLAN(network.WLAN.IF_STA)
     mac = ubinascii.hexlify(sta_if.config('mac')).decode()
@@ -43,13 +43,35 @@ def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str:
     if not sta_if.isconnected():
         print("connecting to network...")
         sta_if.active(True)
+        sta_if.config(reconnects=1)
         sta_if.connect(ssid, pwd)
-        while not sta_if.isconnected():
+        while sta_if.status() == network.STAT_CONNECTING:
             machine.idle()
+        if not sta_if.isconnected():
+            sta_if.active(False)
+            print("connection failed")
+            return None
     print("network config:", sta_if.ipconfig("addr4"))
     network.ipconfig(dns=dns)
     return mac[:6]
 
+def create_ap():
+    # Configure access point with MAC-based SSID
+    sta = network.WLAN(network.WLAN.IF_STA)
+    sta.active(False)  # ensure STA mode is off so AP can work cleanly
+
+    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
+    ap.active(True)                       # activate the interface
+
+    mac = ubinascii.hexlify(ap.config('mac')).decode()
+    print(f"{mac}")
+    ap.config(ssid=f"ESP32-{mac[:6]}")    # set the SSID of the access point
+    ap.config(max_clients=1)              # set how many clients can connect to the network
+    #ap.active(True)                       # activate the interface
+    while ap.active() is False:
+        pass
+    asyncio.run(server.main())
+    error()
 
 # read wifi credential from SD card
 led.on()
@@ -97,19 +119,10 @@ time.sleep_ms(200)
 led.on()
 if SSID != "":
     mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
+    if mac is None:
+        create_ap()
 else:
-    # Configure access point with MAC-based SSID
-    ap = network.WLAN(network.WLAN.IF_AP) # create access-point interface
-    mac = ubinascii.hexlify(ap.config('mac')).decode()
-    print(f"{mac}")
-    ap.config(ssid=f"ESP32-{mac[:6]}")    # set the SSID of the access point
-    ap.config(max_clients=1)              # set how many clients can connect to the network
-    ap.active(True)                       # activate the interface
-    while ap.active() is False:
-        pass
-    asyncio.run(server.main())
-    while True:
-        time.sleep(10)
+    create_ap()
 led.off()
 if (OTA_PRJ != None) and (OTA_HOST != None):
     micropython_ota.ota_update(OTA_HOST, OTA_PRJ, use_version_prefix=False)
