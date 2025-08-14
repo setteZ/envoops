@@ -12,7 +12,7 @@ import time
 import ubinascii
 
 import machine
-from machine import Pin, SDCard
+from machine import Pin
 import network
 
 import micropython_ota
@@ -52,10 +52,9 @@ def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str:
 
 
 # read wifi credential from SD card
-sd = SDCard(slot=2)
 led.on()
 try:
-    os.mount(sd, "/sd")  # mount
+    os.mount(configs.sd, "/sd")  # mount
 except:  # pylint: disable=bare-except
     print("missing uSD")
 else:

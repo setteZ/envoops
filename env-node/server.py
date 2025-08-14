@@ -1,6 +1,7 @@
 import asyncio
 import json
 import machine
+import os
 import re
 
 import configs
@@ -18,8 +19,14 @@ h = None  # will store latest I2C reading
 # Config handling
 # ----------------------------
 def save_config(cfg):
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(cfg, f)
+    try:
+        os.mount(configs.sd, "/sd")  # mount
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+    except:
+        raise
+    finally:
+        os.umount("/sd")  # eject
 
 def try_cast(val):
     if val.isdigit():
