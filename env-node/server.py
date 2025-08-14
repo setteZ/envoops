@@ -144,9 +144,7 @@ async def redirect(writer, location):
 # Request handler
 # ----------------------------
 async def serve_client(reader, writer):
-    led = machine.Pin(2, machine.Pin.OUT)  # Adjust to your LED pin
     try:
-        led.on()
         request_line = await reader.readline()
         if not request_line:
             await writer.aclose()
@@ -208,7 +206,6 @@ async def serve_client(reader, writer):
         print("Error:", e)
     finally:
         await writer.aclose()
-        led.off()
 
 # ----------------------------
 # Background task
