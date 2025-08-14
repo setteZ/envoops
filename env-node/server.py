@@ -3,6 +3,7 @@ import json
 import machine
 import re
 
+import configs
 from configs import CONFIG_PATH
 from measurement import Measurement  # your I2C device reading module
 from utils import get_version
@@ -17,8 +18,11 @@ h = None  # will store latest I2C reading
 # Config handling
 # ----------------------------
 def load_config():
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except OSError as e:
+        return {}
 
 def save_config(cfg):
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
@@ -167,7 +171,7 @@ async def serve_client(reader, writer):
                 await send_html(writer, html_home())
 
             elif path == "/config":
-                await send_html(writer, html_config(data))
+                await send_html(writer, html_config(configs.data))
 
             elif path == "/version":
                 await send_html(writer, html_version())
@@ -191,8 +195,8 @@ async def serve_client(reader, writer):
             params = parse_post_body(body)
             try:
                 for k, v in params.items():
-                    update_dict(data, k, v)
-                save_config(data)
+                    update_dict(configs.data, k, v)
+                save_config(configs.data)
                 await redirect(writer, "/")
             except Exception as e:
                 await redirect(writer, f"/error?{urldecode(str(e))}")

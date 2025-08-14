@@ -3,8 +3,6 @@ This is the main
 """
 
 import asyncio
-import json
-import os
 import time
 
 import machine
@@ -30,33 +28,25 @@ def error():
         time.sleep_ms(200)
         led.on()
 
-
-# read wifi credential from SD card
-os.mount(sd, "/sd")  # mount
-with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
-    data = json.load(f)
-os.umount("/sd")  # eject
-print(data)
-
 try:
-    HOST = data["host"]
+    HOST = configs.data["host"]
 except:
     global mac
     HOST = f"env-node_{mac}"
 try:
-    MQTT_SERVER = data["mqtt"]["server"]
-    MQTT_PORT = data["mqtt"]["port"]
+    MQTT_SERVER = configs.data["mqtt"]["server"]
+    MQTT_PORT = configs.data["mqtt"]["port"]
 except:
     print("missing mqtt server and port info")
     error()
 try:
-    MQTT_PUBLISH_TOPIC = data["mqtt"]["topic"]
+    MQTT_PUBLISH_TOPIC = configs.data["mqtt"]["topic"]
 except:
     MQTT_PUBLISH_TOPIC = HOST
 
 try:
-    OTA_HOST = data["ota_update"]["host"]
-    OTA_PRJ = data["ota_update"]["prj"]
+    OTA_HOST = configs.data["ota_update"]["host"]
+    OTA_PRJ = configs.data["ota_update"]["prj"]
 except:
     OTA_HOST = None
     OTA_PRJ = None

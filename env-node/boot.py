@@ -61,29 +61,29 @@ except:  # pylint: disable=bare-except
 else:
     try:
         with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            configs.data = json.load(f)
     except:  # pylint: disable=bare-except
         print(f"missing {configs.CONFIG_PATH} file")
     else:
-        print(data)
+        print(configs.data)
         try:
-            PWD = data["network"]["pwd"]
-            SSID = data["network"]["ssid"]
+            PWD = configs.data["network"]["pwd"]
+            SSID = configs.data["network"]["ssid"]
         except:  # pylint: disable=bare-except
             print("missing info for the SSID connection")
         try:
-            ADDR4 = data["network"]["addr4"]
-            GW4 = data["network"]["gw4"]
+            ADDR4 = configs.data["network"]["addr4"]
+            GW4 = configs.data["network"]["gw4"]
         except:  # pylint: disable=bare-except
             ADDR4 = ""
             GW4 = ""
         try:
-            DNS = data["network"]["dns"]
+            DNS = configs.data["network"]["dns"]
         except:  # pylint: disable=bare-except
             DNS = GW4
         try:
-            OTA_HOST = data["ota_update"]["host"]
-            OTA_PRJ = data["ota_update"]["prj"]
+            OTA_HOST = configs.data["ota_update"]["host"]
+            OTA_PRJ = configs.data["ota_update"]["prj"]
         except:  # pylint: disable=bare-except
             OTA_HOST = None
             OTA_PRJ = None
