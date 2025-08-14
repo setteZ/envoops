@@ -17,13 +17,6 @@ h = None  # will store latest I2C reading
 # ----------------------------
 # Config handling
 # ----------------------------
-def load_config():
-    try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except OSError as e:
-        return {}
-
 def save_config(cfg):
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f)
