@@ -70,8 +70,8 @@ def html_home():
         <h3>STH3X</h3>
         <p>temperature: {t if t is not None else 'No data yet'}</p>
         <p>humidity: {h if h is not None else 'No data yet'}</p>
-        <form action="/config"><button type="submit">Edit Config</button></form>
-        <form action="/reset"><button type="submit">Reset</button></form>
+        <button onclick="window.location.href='/config'">Edit Config</button>
+        <button onclick="window.location.href='/reset'">Reset</button>
     </body></html>
     """
 
@@ -83,7 +83,7 @@ def html_config(data):
             {dict_to_form(data)}
             <button type="submit">Update</button>
         </form>
-        <form action="/"><button type="submit">Back to Home</button></form>
+        <button onclick="window.location.href='/'">Back to Home</button>
     </body></html>
     """
 
@@ -92,7 +92,7 @@ def html_error(msg):
     <html><body>
         <h1>Error</h1>
         <p>{msg}</p>
-        <form action="/"><button type="submit">Back to Home</button></form>
+        <button onclick="window.location.href='/'">Back to Home</button>
     </body></html>
     """
 
