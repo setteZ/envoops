@@ -23,7 +23,6 @@ import server
 led = Pin(2, Pin.OUT)
 
 global mac
-SSID = ""
 
 def error():
     while True:
@@ -34,6 +33,8 @@ def error():
 
 def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str | None:
     """connect to network"""
+    if ssid == "":
+        return None
     sta_if = network.WLAN(network.WLAN.IF_STA)
     mac = ubinascii.hexlify(sta_if.config('mac')).decode()
     addr_p = re.compile("\\d+\\.\\d+\\.\\d+\\.\\d+/\\d+")
@@ -73,6 +74,21 @@ def create_ap():
     asyncio.run(server.main())
     error()
 
+def import_config(src, dest) -> dict:
+    try:
+        for k,v in src.items():
+            if k in dest:
+                if isinstance(v, dict):
+                    dest[k] = import_config(v, dest[k])
+                else:
+                    dest[k] = v
+            else:
+                print(f"key {k} not present in config")
+        return dest
+    except Exception as err:
+        print(err)
+        raise
+
 # read wifi credential from SD card
 led.on()
 try:
@@ -82,32 +98,13 @@ except:  # pylint: disable=bare-except
 else:
     try:
         with open(configs.CONFIG_PATH, "r", encoding="utf-8") as f:
-            configs.data = json.load(f)
+            data = json.load(f)
+        print(f"data read: {data}")
+        configs.data = import_config(data, configs.data)
     except:  # pylint: disable=bare-except
         print(f"missing {configs.CONFIG_PATH} file")
     else:
         print(configs.data)
-        try:
-            PWD = configs.data["network"]["pwd"]
-            SSID = configs.data["network"]["ssid"]
-        except:  # pylint: disable=bare-except
-            print("missing info for the SSID connection")
-        try:
-            ADDR4 = configs.data["network"]["addr4"]
-            GW4 = configs.data["network"]["gw4"]
-        except:  # pylint: disable=bare-except
-            ADDR4 = ""
-            GW4 = ""
-        try:
-            DNS = configs.data["network"]["dns"]
-        except:  # pylint: disable=bare-except
-            DNS = GW4
-        try:
-            OTA_HOST = configs.data["ota_update"]["host"]
-            OTA_PRJ = configs.data["ota_update"]["prj"]
-        except:  # pylint: disable=bare-except
-            OTA_HOST = None
-            OTA_PRJ = None
 
 finally:
     os.umount("/sd")  # eject
@@ -117,12 +114,16 @@ finally:
 led.off()
 time.sleep_ms(200)
 led.on()
-if SSID != "":
-    mac = do_connect(SSID, PWD, ADDR4, GW4, DNS)
-    if mac is None:
-        create_ap()
-else:
+
+PWD = configs.data["network"]["pwd"]
+SSID = configs.data["network"]["ssid"]
+ADDR4 = configs.data["network"]["addr4"]
+GW4 = configs.data["network"]["gw4"]
+mac = do_connect(SSID, PWD, ADDR4, GW4, GW4)
+if mac is None:
     create_ap()
 led.off()
-if (OTA_PRJ != None) and (OTA_HOST != None):
+OTA_HOST = configs.data["ota_update"]["host"]
+OTA_PRJ = configs.data["ota_update"]["prj"]
+if (OTA_PRJ != "") and (OTA_HOST != ""):
     micropython_ota.ota_update(OTA_HOST, OTA_PRJ, use_version_prefix=False)
