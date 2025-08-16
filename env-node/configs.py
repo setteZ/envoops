@@ -2,7 +2,6 @@ from machine import SDCard
 
 CONFIG_PATH = "/sd/config.json"
 data = {
-  "version": "0.3",
   "host": "",
   "network": {
     "ssid": "",

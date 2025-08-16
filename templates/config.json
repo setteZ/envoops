@@ -1,5 +1,4 @@
 {
-  "version": "0.3",
   "host": "host-name",
   "network": {
     "ssid": "wifi-ssid",
