@@ -4,7 +4,7 @@ The purpose of this repo is to develop an environmental wifi node using and ESP3
 It is divided into different artifacts:
 - [env-node](env-node) is the physcal node the perform the measurements (written in Micropython)
 - [env-server](env-server) is the server that collect and save all the data (written in Go)
-- [broker](broker) the MQTT broker that dispatch the messagges to the network (using the [mosquitto](https://mosquitto.org/)
+- [broker](broker) the MQTT broker that dispatch the messagges to the network (using the [mosquitto](https://mosquitto.org/))
 
 Once you clone the repo, you shall update the sumbodules:
 ```bash
