@@ -19,9 +19,9 @@ git submodule update --init --recursive
 
 This project includes third-party components included via Git submodule:
 
-- [micropython_ota](https://github.com/settez/micropython_ota/tree/8420316b833a871c912032a0d45d295cb53c7d40) (MIT License) - submodule at `env-node/micropython_ota/`.
-- [micropython-mqtt](https://github.com/chrismoorhouse/micropython-mqtt/tree/df542c8bedcb4daf98239813e6f424d90ccdae78) (BSD 3-Clause License) - submodule at `env-node/micropython-mqtt/`.
-- [sht30](https://github.com/robert-hh/SHT30/tree/0352fe9513fcc96a7bfaba8edb0cccccd2d8b0f8) (Apache 2.0 License) - submodule at `env-node/sht30/`.
+- [micropython_ota](https://github.com/settez/micropython_ota/tree/8420316b833a871c912032a0d45d295cb53c7d40) (MIT License) - submodule at `env-node/lib/micropython_ota/`.
+- [micropython-mqtt](https://github.com/chrismoorhouse/micropython-mqtt/tree/df542c8bedcb4daf98239813e6f424d90ccdae78) (BSD 3-Clause License) - submodule at `env-node/lib/micropython-mqtt/`.
+- [sht30](https://github.com/robert-hh/SHT30/tree/0352fe9513fcc96a7bfaba8edb0cccccd2d8b0f8) (Apache 2.0 License) - submodule at `env-node/lib/sht30/`.
 
 See each submodule's `LICENSE` file for details.
 
