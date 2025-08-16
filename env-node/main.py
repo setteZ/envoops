@@ -28,28 +28,20 @@ def error():
         time.sleep_ms(200)
         led.on()
 
-try:
-    HOST = configs.data["host"]
-except:
+HOST = configs.data["host"]
+if HOST == "":
     global mac
     HOST = f"env-node_{mac}"
-try:
-    MQTT_SERVER = configs.data["mqtt"]["server"]
-    MQTT_PORT = configs.data["mqtt"]["port"]
-except:
-    print("missing mqtt server and port info")
-    error()
-try:
-    MQTT_PUBLISH_TOPIC = configs.data["mqtt"]["topic"]
-except:
+
+MQTT_SERVER = configs.data["mqtt"]["server"]
+MQTT_PORT = configs.data["mqtt"]["port"]
+
+MQTT_PUBLISH_TOPIC = configs.data["mqtt"]["topic"]
+if MQTT_PUBLISH_TOPIC == "":
     MQTT_PUBLISH_TOPIC = HOST
 
-try:
-    OTA_HOST = configs.data["ota_update"]["host"]
-    OTA_PRJ = configs.data["ota_update"]["prj"]
-except:
-    OTA_HOST = None
-    OTA_PRJ = None
+OTA_HOST = configs.data["ota_update"]["host"]
+OTA_PRJ = configs.data["ota_update"]["prj"]
 
 
 def puback_cb(msg_id):
@@ -70,7 +62,7 @@ def msg_cb(topic, pay):
   if dest in ["all", HOST]:
     print(f"the command {pay_str} is for me")
     if pay_str == "update":
-        if (OTA_PRJ != None) and (OTA_HOST != None):
+        if (OTA_PRJ != "") and (OTA_HOST != ""):
             micropython_ota.check_for_ota_update(OTA_HOST, OTA_PRJ)
 
 client = MQTTClient(MQTT_SERVER, port=MQTT_PORT)
