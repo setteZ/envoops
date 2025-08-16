@@ -77,7 +77,9 @@ if MQTT_SERVER != "":
 
     client.connect(HOST)
 
-    while not client.isconnected():
+    timeout = 100  # ~10 seconds
+    while timeout > 0 and not client.isconnected():
         time.sleep_ms(100)
+        timeout -= 1
 
 asyncio.run(server.main())
