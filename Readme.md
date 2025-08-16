@@ -44,7 +44,7 @@ With the `Makefile` there is the possibility to call some scripts to make the li
 
 - `make put` update the board connected to the USB
 - `make repl` open the serial repl connection (using `picocom`)
-- `make run-broker` run localli a MQTT broker for manual test
+- `make run-broker` run locally a MQTT broker for manual test
 - `make release` prepare a folder with all the files necessary for a release
 - `make deploy-ota` deploy on a server the release files
 
