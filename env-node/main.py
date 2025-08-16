@@ -17,16 +17,7 @@ import configs
 import server
 from utils import get_version
 
-led = Pin(2, Pin.OUT)
-
 current_version = get_version()
-
-def error():
-    while True:
-        time.sleep_ms(200)
-        led.off()
-        time.sleep_ms(200)
-        led.on()
 
 HOST = configs.data["host"]
 if HOST == "":

@@ -24,13 +24,6 @@ led = Pin(2, Pin.OUT)
 
 global mac
 
-def error():
-    while True:
-        time.sleep_ms(200)
-        led.off()
-        time.sleep_ms(200)
-        led.on()
-
 def do_connect(ssid: str, pwd: str, addr4="", gw4="", dns="0.0.0.0") -> str | None:
     """connect to network"""
     if ssid == "":
@@ -72,7 +65,6 @@ def create_ap():
     while ap.active() is False:
         pass
     asyncio.run(server.main())
-    error()
 
 def import_config(src, dest) -> dict:
     try:
