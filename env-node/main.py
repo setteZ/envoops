@@ -35,6 +35,8 @@ if HOST == "":
 
 MQTT_SERVER = configs.data["mqtt"]["server"]
 MQTT_PORT = configs.data["mqtt"]["port"]
+if MQTT_PORT == "":
+    MQTT_PORT = 1883
 
 MQTT_PUBLISH_TOPIC = configs.data["mqtt"]["topic"]
 if MQTT_PUBLISH_TOPIC == "":
@@ -65,16 +67,17 @@ def msg_cb(topic, pay):
         if (OTA_PRJ != "") and (OTA_HOST != ""):
             micropython_ota.check_for_ota_update(OTA_HOST, OTA_PRJ)
 
-client = MQTTClient(MQTT_SERVER, port=MQTT_PORT)
+if MQTT_SERVER != "":
+    client = MQTTClient(MQTT_SERVER, port=MQTT_PORT)
 
-client.set_connected_callback(con_cb)
-client.set_puback_callback(puback_cb)
-client.set_suback_callback(suback_cb)
-client.set_message_callback(msg_cb)
+    client.set_connected_callback(con_cb)
+    client.set_puback_callback(puback_cb)
+    client.set_suback_callback(suback_cb)
+    client.set_message_callback(msg_cb)
 
-client.connect(HOST)
+    client.connect(HOST)
 
-while not client.isconnected():
-    time.sleep_ms(100)
+    while not client.isconnected():
+        time.sleep_ms(100)
 
 asyncio.run(server.main())
