@@ -1,7 +1,10 @@
 # envoops
 
-The purpose of this repo is to develop an environmental wifi node using and ESP32 based board and [micropython](https://micropython.org/) for rapid prototyping.\
-It is divided into different artifacts:
+The purpose of this project is to develop an environmental wifi node using and ESP32 based board and [micropython](https://micropython.org/) for rapid prototyping.
+
+## Repository structure
+
+This is a **monorepo** divided into independent but interrelated products:
 - [env-node](env-node) is the physcal node the perform the measurements (written in Micropython)
 - [env-server](env-server) is the server that collect and save all the data (written in Go)
 - [broker](broker) the MQTT broker that dispatch the messagges to the network (using the [mosquitto](https://mosquitto.org/))
@@ -13,9 +16,19 @@ cd envoops
 git submodule update --init --recursive
 ```
 
-## env-node
+Each product has its own release cycle and versioning, and we use Git tags in the format:
 
-### Third-Party Code
+```
+<product-name>/v<semver>
+```
+
+Example tags:
+- `env-node/v1.3.0`
+- `env-server/v2.0.1`
+
+### env-node
+
+#### Third-Party Code
 
 This project includes third-party components included via Git submodule:
 
@@ -25,7 +38,7 @@ This project includes third-party components included via Git submodule:
 
 See each submodule's `LICENSE` file for details.
 
-### Prerequisites
+#### Prerequisites
 
 The following assume that `/dev/ttyUSB0` is the serial port of the board.
 - install [esptool](https://docs.espressif.com/projects/esptool/en/latest/esp32/)
@@ -34,7 +47,7 @@ The following assume that `/dev/ttyUSB0` is the serial port of the board.
 - verify that everything is fine with `esptool.py flash_id` (or `esptool.py -p /dev/ttyUSB0 flash_id` if esptool.py can't automatically detect the serial port)
 - install `picocom` for REPL access
 
-### Installation
+#### Installation
 
 Follow the instruction [here](https://micropython.org/download/ESP32_GENERIC/) to flash the board.
 
