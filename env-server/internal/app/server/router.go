@@ -2,6 +2,7 @@ package server
 
 import (
 	"env-server/internal/handlers"
+	"env-server/internal/version"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,16 @@ func setupRouter(relMode string) *gin.Engine {
 
 	/* test route */
 	router.GET("/ping", handlers.PingResponse)
+	/****************/
+
+	/* server info route */
+	router.GET("/version", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"version": version.Version,
+			"commit":  version.Commit,
+			"date":    version.Date,
+		})
+	})
 	/****************/
 
 	/* static route */
