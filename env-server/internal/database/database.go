@@ -5,7 +5,6 @@ import (
 	"env-server/models"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -73,13 +72,59 @@ func CheckDB() error {
 }
 
 func AddData(data *models.NodeData) error {
-	db, _ := sql.Open("sqlite3", dbFilePath)
+	db, err := sql.Open("sqlite3", dbFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to open database: %w", err)
+	}
 	defer db.Close()
 
-	_, err := db.Exec("INSERT INTO data (nodeid, time, quantity, value) VALUES (?, ?, ?, ?)", data.NodeId, data.Time, data.Quantity, data.Value)
-	if nil != err {
-		log.Printf("Insert data error: %s", err)
-		return errors.New("AddData error: " + fmt.Sprint(err))
+	// Check the last entry for this nodeid
+	row := db.QueryRow(`
+		SELECT id, quantity, value 
+		FROM data 
+		WHERE nodeid = ? 
+		ORDER BY time DESC 
+		LIMIT 1`, data.NodeId)
+
+	var lastID int64
+	var lastQuantity string
+	var lastValue float64
+
+	err = row.Scan(&lastID, &lastQuantity, &lastValue)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No previous entry -> insert
+			_, err = db.Exec(`
+				INSERT INTO data (nodeid, time, quantity, value) 
+				VALUES (?, ?, ?, ?)`,
+				data.NodeId, data.Time, data.Quantity, data.Value)
+			if err != nil {
+				return fmt.Errorf("failed to insert data: %w", err)
+			}
+			return nil
+		}
+		return fmt.Errorf("query last entry error: %w", err)
+	}
+
+	// If last (quantity, value) match -> update time
+	if lastQuantity == data.Quantity && lastValue == data.Value {
+		_, err = db.Exec(`
+			UPDATE data 
+			SET time = ? 
+			WHERE id = ?`,
+			data.Time, lastID)
+		if err != nil {
+			return fmt.Errorf("failed to update entry time: %w", err)
+		}
+	} else {
+		// Otherwise insert a new entry
+		_, err = db.Exec(`
+			INSERT INTO data (nodeid, time, quantity, value) 
+			VALUES (?, ?, ?, ?)`,
+			data.NodeId, data.Time, data.Quantity, data.Value)
+		if err != nil {
+			return fmt.Errorf("failed to insert new entry: %w", err)
+		}
 	}
 
 	return nil
