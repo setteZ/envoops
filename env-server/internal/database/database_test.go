@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"env-server/models"
-	"fmt"
 	"os"
 	"testing"
 
@@ -21,23 +20,24 @@ func TestAddData_first(t *testing.T) {
 	filePath := "test.db"
 	initializedDB(filePath)
 
-	table_name := "tableName"
 	var data models.NodeData
+	data.NodeId = "esp-12345"
 	data.Quantity = "temperature"
 	data.Value = 25.2
-	err := AddData(&table_name, &data)
+	err := AddData(&data)
 	assert.Equal(t, nil, err)
 
 	db, _ := sql.Open("sqlite3", dbFilePath)
 	defer db.Close()
-	query := fmt.Sprintf("SELECT * FROM %s", table_name)
-	rows, err := db.Query(query)
+	rows, err := db.Query("SELECT * FROM data")
 	assert.Equal(t, nil, err)
 	defer rows.Close()
 	var read models.NodeData
 	for rows.Next() {
-		rows.Scan(&read.Id, &read.Time, &read.Quantity, &read.Value)
+		rows.Scan(&read.Id, &read.NodeId, &read.Time, &read.Quantity, &read.Value)
 	}
+	assert.Equal(t, read.NodeId, data.NodeId)
+	assert.Equal(t, read.Time, data.Time)
 	assert.Equal(t, read.Quantity, data.Quantity)
 	assert.Equal(t, read.Value, data.Value)
 	os.Remove(filePath)

@@ -30,10 +30,11 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	json.Unmarshal([]byte(message.Payload()), &mqtt_data)
 
 	var data models.NodeData
+	data.NodeId = strings.Split(message.Topic(), "/")[1]
 	data.Quantity = mqtt_data.Quantity
 	data.Value = mqtt_data.Value
 	data.Time = time.Now().Format("2006-01-02_15:04:05")
-	database.AddData(&strings.Split(message.Topic(), "/")[1], &data)
+	database.AddData(&data)
 }
 
 func Run() {
