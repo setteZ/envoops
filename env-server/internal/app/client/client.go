@@ -6,6 +6,7 @@ import (
 	"env-server/models"
 	"env-server/utils"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -21,20 +22,37 @@ var DEFAULT_BROKER_PORT = "1883"
 func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	log.Printf("Received message on topic: %s\nMessage: %s\n", message.Topic(), message.Payload())
 
-	type MQTT_In_Data struct {
-		Value    float64 `json:"value"`
-		Quantity string  `json:"quantity"`
+	data, err := parseMessage(message.Topic(), message.Payload())
+	if err != nil {
+		log.Printf("Failed to parse message: %v", err)
+		return
 	}
 
-	var mqtt_data MQTT_In_Data
-	json.Unmarshal([]byte(message.Payload()), &mqtt_data)
+	database.AddData(data)
+}
 
-	var data models.NodeData
-	data.NodeId = strings.Split(message.Topic(), "/")[1]
-	data.Quantity = mqtt_data.Quantity
-	data.Value = mqtt_data.Value
-	data.Time = time.Now().Format("2006-01-02_15:04:05")
-	database.AddData(&data)
+type MQTT_In_Data struct {
+	Value    float64 `json:"value"`
+	Quantity string  `json:"quantity"`
+}
+
+func parseMessage(topic string, payload []byte) (*models.NodeData, error) {
+	var mqttData MQTT_In_Data
+	if err := json.Unmarshal(payload, &mqttData); err != nil {
+		return nil, err
+	}
+
+	parts := strings.Split(topic, "/")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("invalid topic format: %s", topic)
+	}
+
+	return &models.NodeData{
+		NodeId:   parts[1],
+		Quantity: mqttData.Quantity,
+		Value:    mqttData.Value,
+		Time:     time.Now().Format("2006-01-02_15:04:05"),
+	}, nil
 }
 
 func Run() {
