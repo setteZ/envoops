@@ -76,8 +76,7 @@ func AddData(data *models.NodeData) error {
 	db, _ := sql.Open("sqlite3", dbFilePath)
 	defer db.Close()
 
-	query := fmt.Sprintf("INSERT INTO data (nodeid, time, quantity, value) VALUES (?, ?, ?, ?)")
-	_, err := db.Exec(query, data.NodeId, data.Time, data.Quantity, data.Value)
+	_, err := db.Exec("INSERT INTO data (nodeid, time, quantity, value) VALUES (?, ?, ?, ?)", data.NodeId, data.Time, data.Quantity, data.Value)
 	if nil != err {
 		log.Printf("Insert data error: %s", err)
 		return errors.New("AddData error: " + fmt.Sprint(err))
