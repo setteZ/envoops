@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 VERSION := $(shell cat ./env-node/version | tr -d '\n')
 
-put:
+put-node:
 	@bash -c "source ./utils/.venv/bin/activate && bash ./utils/put.sh"
 
 repl:
@@ -11,7 +11,7 @@ run-broker:
 	@bash -c "mosquitto -c ./broker/mosquitto.conf"
 
 .PHONY: release
-release: clean
+release-node: clean
 	mkdir -p release-node/$(VERSION)
 	python ./utils/make-release.py -b ./utils/put.sh -n -o release-node/$(VERSION)
 
