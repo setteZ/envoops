@@ -114,38 +114,79 @@ func (m *mockDatabase) AddData(data *models.NodeData) error {
 // Integration-style test for onMessageReceived
 // -------------------------------
 func TestOnMessageReceived(t *testing.T) {
-	// replace database.AddData with mock
+	// fake DB
 	mockDB := &mockDatabase{}
+
+	// Save and replace DatabaseAddData
 	originalAddData := DatabaseAddData
 	DatabaseAddData = mockDB.AddData
 	defer func() { DatabaseAddData = originalAddData }()
 
-	// Prepare message
-	payload := `{"value": 23.4, "quantity": "temperature"}`
-	topic := "nodes/456"
-
-	message := fakeMessage{
-		topic:   topic,
-		payload: []byte(payload),
+	tests := []struct {
+		name        string
+		topic       string
+		payload     string
+		expectSaved bool
+		expectNode  *models.NodeData
+	}{
+		{
+			name:        "valid message",
+			topic:       "nodes/456",
+			payload:     `{"value": 23.4, "quantity": "temperature"}`,
+			expectSaved: true,
+			expectNode: &models.NodeData{
+				NodeId:   "456",
+				Quantity: "temperature",
+				Value:    23.4,
+			},
+		},
+		{
+			name:        "invalid JSON",
+			topic:       "nodes/456",
+			payload:     `not-json`,
+			expectSaved: false,
+		},
+		{
+			name:        "invalid topic format",
+			topic:       "nodes", // missing node id
+			payload:     `{"value": 23.4, "quantity": "temperature"}`,
+			expectSaved: false,
+		},
 	}
 
-	// Call function
-	onMessageReceived(nil, message)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// reset DB mock before each subtest
+			mockDB.added = nil
 
-	// Assert
-	if len(mockDB.added) != 1 {
-		t.Fatalf("expected 1 data entry, got %d", len(mockDB.added))
-	}
-	data := mockDB.added[0]
+			message := fakeMessage{
+				topic:   tt.topic,
+				payload: []byte(tt.payload),
+			}
 
-	if data.NodeId != "456" {
-		t.Errorf("NodeId mismatch: got %s, want %s", data.NodeId, "456")
-	}
-	if data.Quantity != "temperature" {
-		t.Errorf("Quantity mismatch: got %s, want %s", data.Quantity, "temperature")
-	}
-	if data.Value != 23.4 {
-		t.Errorf("Value mismatch: got %f, want %f", data.Value, 23.4)
+			onMessageReceived(nil, message)
+
+			if tt.expectSaved {
+				if len(mockDB.added) != 1 {
+					t.Fatalf("expected 1 data entry, got %d", len(mockDB.added))
+				}
+				data := mockDB.added[0]
+
+				if data.NodeId != tt.expectNode.NodeId {
+					t.Errorf("NodeId mismatch: got %s, want %s", data.NodeId, tt.expectNode.NodeId)
+				}
+				if data.Quantity != tt.expectNode.Quantity {
+					t.Errorf("Quantity mismatch: got %s, want %s", data.Quantity, tt.expectNode.Quantity)
+				}
+				if data.Value != tt.expectNode.Value {
+					t.Errorf("Value mismatch: got %f, want %f", data.Value, tt.expectNode.Value)
+				}
+			} else {
+				if len(mockDB.added) != 0 {
+					t.Errorf("expected no data saved, but got %d entries", len(mockDB.added))
+				}
+			}
+		})
 	}
 }
 
