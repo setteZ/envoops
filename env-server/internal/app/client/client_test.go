@@ -1,0 +1,166 @@
+package client
+
+import (
+	"encoding/json"
+	"testing"
+	"time"
+
+	"env-server/models"
+)
+
+// -------------------------------
+// Unit test for ParseMessage
+// -------------------------------
+func TestParseMessage(t *testing.T) {
+	tests := []struct {
+		name        string
+		topic       string
+		payload     interface{} // raw struct that will be marshaled into JSON
+		expectError bool
+		expectNode  *models.NodeData
+	}{
+		{
+			name:  "valid message",
+			topic: "nodes/123",
+			payload: map[string]interface{}{
+				"value":    42.5,
+				"quantity": "temperature",
+			},
+			expectError: false,
+			expectNode: &models.NodeData{
+				NodeId:   "123",
+				Quantity: "temperature",
+				Value:    42.5,
+			},
+		},
+		{
+			name:        "invalid JSON",
+			topic:       "nodes/123",
+			payload:     "not-json",
+			expectError: true,
+		},
+		{
+			name:  "invalid topic format",
+			topic: "nodes", // no node ID
+			payload: map[string]interface{}{
+				"value":    1,
+				"quantity": "humidity",
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var payloadBytes []byte
+			var err error
+
+			switch v := tt.payload.(type) {
+			case string:
+				payloadBytes = []byte(v)
+			default:
+				payloadBytes, err = json.Marshal(v)
+				if err != nil {
+					t.Fatalf("failed to marshal test payload: %v", err)
+				}
+			}
+
+			result, err := parseMessage(tt.topic, payloadBytes)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if result.NodeId != tt.expectNode.NodeId {
+				t.Errorf("NodeId mismatch: got %s, want %s", result.NodeId, tt.expectNode.NodeId)
+			}
+			if result.Quantity != tt.expectNode.Quantity {
+				t.Errorf("Quantity mismatch: got %s, want %s", result.Quantity, tt.expectNode.Quantity)
+			}
+			if result.Value != tt.expectNode.Value {
+				t.Errorf("Value mismatch: got %f, want %f", result.Value, tt.expectNode.Value)
+			}
+
+			// Time should parse correctly
+			_, err = time.Parse("2006-01-02_15:04:05", result.Time)
+			if err != nil {
+				t.Errorf("Time not in expected format: %s", result.Time)
+			}
+		})
+	}
+}
+
+// -------------------------------
+// Mock for database.AddData
+// -------------------------------
+type mockDatabase struct {
+	added []*models.NodeData
+}
+
+func (m *mockDatabase) AddData(data *models.NodeData) error {
+	m.added = append(m.added, data)
+	return nil
+}
+
+// -------------------------------
+// Integration-style test for onMessageReceived
+// -------------------------------
+func TestOnMessageReceived(t *testing.T) {
+	// replace database.AddData with mock
+	mockDB := &mockDatabase{}
+	originalAddData := DatabaseAddData
+	DatabaseAddData = mockDB.AddData
+	defer func() { DatabaseAddData = originalAddData }()
+
+	// Prepare message
+	payload := `{"value": 23.4, "quantity": "temperature"}`
+	topic := "nodes/456"
+
+	message := fakeMessage{
+		topic:   topic,
+		payload: []byte(payload),
+	}
+
+	// Call function
+	onMessageReceived(nil, message)
+
+	// Assert
+	if len(mockDB.added) != 1 {
+		t.Fatalf("expected 1 data entry, got %d", len(mockDB.added))
+	}
+	data := mockDB.added[0]
+
+	if data.NodeId != "456" {
+		t.Errorf("NodeId mismatch: got %s, want %s", data.NodeId, "456")
+	}
+	if data.Quantity != "temperature" {
+		t.Errorf("Quantity mismatch: got %s, want %s", data.Quantity, "temperature")
+	}
+	if data.Value != 23.4 {
+		t.Errorf("Value mismatch: got %f, want %f", data.Value, 23.4)
+	}
+}
+
+// -------------------------------
+// Fake MQTT.Message for testing
+// -------------------------------
+type fakeMessage struct {
+	topic   string
+	payload []byte
+}
+
+func (m fakeMessage) Duplicate() bool   { return false }
+func (m fakeMessage) Qos() byte         { return 0 }
+func (m fakeMessage) Retained() bool    { return false }
+func (m fakeMessage) Topic() string     { return m.topic }
+func (m fakeMessage) MessageID() uint16 { return 1 }
+func (m fakeMessage) Payload() []byte   { return m.payload }
+func (m fakeMessage) Ack()              {}

@@ -18,6 +18,7 @@ import (
 
 var DEFAULT_BROKER_ADDRESS = "127.0.0.1"
 var DEFAULT_BROKER_PORT = "1883"
+var DatabaseAddData = database.AddData
 
 func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 	log.Printf("Received message on topic: %s\nMessage: %s\n", message.Topic(), message.Payload())
@@ -28,7 +29,7 @@ func onMessageReceived(client MQTT.Client, message MQTT.Message) {
 		return
 	}
 
-	database.AddData(data)
+	DatabaseAddData(data)
 }
 
 type MQTT_In_Data struct {
