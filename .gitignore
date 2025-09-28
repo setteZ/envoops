@@ -2,5 +2,6 @@ utils/.venv/
 tmp/
 *.db
 release/
-release-node/
+node-release/
 /.env
+build/

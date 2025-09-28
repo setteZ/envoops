@@ -26,4 +26,12 @@ node-clean:
 	@rm -r -f node-release
 
 broker-run:
-	@bash -c "mosquitto -c ./broker/mosquitto.conf"
+	@bash -c "mosquitto -c ./env-broker/mosquitto.conf"
+
+server-build:
+	@rm -f build/env-server
+	@cd env-server && ./build.sh
+	@mkdir -p build
+	@mv env-server/build/env-server build
+	@rm -rf env-server/build
+	@echo ">> Build complete"
